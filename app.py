@@ -244,8 +244,6 @@ def redirecionar(link_id):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Abrindo oferta...</title>
 
-        <meta http-equiv="refresh" content="1;url={link_destino}">
-
         <style>
             body {{
                 background: #111827;
@@ -298,8 +296,8 @@ def redirecionar(link_id):
 
         <script>
             setTimeout(function() {{
-                window.location.href = "{link_destino}";
-            }}, 1200);
+                window.location.assign("{link_destino}");
+            }}, 3000);
         </script>
     </head>
 
@@ -308,11 +306,11 @@ def redirecionar(link_id):
             <h1>🔥 Abrindo oferta...</h1>
 
             <p>
-                Você está sendo redirecionado para a Shopee.
+                Estamos abrindo sua oferta na Shopee.
             </p>
 
             <p>
-                Se não abrir automaticamente, toque no botão abaixo.
+                No celular, se a página fechar ou não abrir automaticamente, toque no botão abaixo.
             </p>
 
             <a class="botao" href="{link_destino}">
@@ -416,4 +414,3 @@ def health():
 if __name__ == "__main__":
     criar_banco()
     app.run(host="0.0.0.0", port=5000)
-
