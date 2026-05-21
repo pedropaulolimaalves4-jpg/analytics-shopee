@@ -296,8 +296,8 @@ def redirecionar(link_id):
 
         <script>
             setTimeout(function() {{
-                window.location.assign("{link_destino}");
-            }}, 3000);
+                window.open("{link_destino}", "_self");
+            }}, 800);
         </script>
     </head>
 
@@ -306,11 +306,7 @@ def redirecionar(link_id):
             <h1>🔥 Abrindo oferta...</h1>
 
             <p>
-                Estamos abrindo sua oferta na Shopee.
-            </p>
-
-            <p>
-                No celular, se a página fechar ou não abrir automaticamente, toque no botão abaixo.
+                Abrindo oferta na Shopee...
             </p>
 
             <a class="botao" href="{link_destino}">
