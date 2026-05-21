@@ -1,4 +1,4 @@
-from flask import Flask, redirect, request, render_template_string
+from flask import Flask, redirect, request, render_template_string, jsonify, Response
 import sqlite3
 from datetime import datetime
 
@@ -146,6 +146,7 @@ def inicio():
     </head>
     <body>
         <h1>🔥 Analytics de Cliques</h1>
+        <p><a style="color:#fbbf24" href="/export/cliques.json">Exportar cliques</a> | <a style="color:#fbbf24" href="/export/links.json">Exportar links</a> | <a style="color:#fbbf24" href="/health">Status</a></p>
 
         <div class="grid">
             <div class="card"><h2>Links</h2><div class="numero">{{ total_links }}</div></div>
@@ -235,7 +236,94 @@ def redirecionar(link_id):
     conexao.commit()
     conexao.close()
 
-    return redirect(link_destino)
+    html = f"""
+    <!DOCTYPE html>
+    <html lang="pt-br">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Abrindo oferta...</title>
+
+        <meta http-equiv="refresh" content="1;url={link_destino}">
+
+        <style>
+            body {{
+                background: #111827;
+                color: white;
+                font-family: Arial, sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                margin: 0;
+                text-align: center;
+                padding: 20px;
+            }}
+
+            .box {{
+                background: #1f2937;
+                padding: 30px;
+                border-radius: 18px;
+                max-width: 420px;
+                width: 100%;
+                box-shadow: 0 0 25px rgba(0,0,0,0.4);
+            }}
+
+            h1 {{
+                color: #fbbf24;
+                margin-bottom: 14px;
+            }}
+
+            p {{
+                color: #d1d5db;
+                line-height: 1.5;
+            }}
+
+            .botao {{
+                display: inline-block;
+                margin-top: 20px;
+                background: #f59e0b;
+                color: black;
+                font-weight: bold;
+                padding: 14px 22px;
+                border-radius: 12px;
+                text-decoration: none;
+                transition: 0.2s;
+            }}
+
+            .botao:hover {{
+                transform: scale(1.04);
+            }}
+        </style>
+
+        <script>
+            setTimeout(function() {{
+                window.location.href = "{link_destino}";
+            }}, 1200);
+        </script>
+    </head>
+
+    <body>
+        <div class="box">
+            <h1>🔥 Abrindo oferta...</h1>
+
+            <p>
+                Você está sendo redirecionado para a Shopee.
+            </p>
+
+            <p>
+                Se não abrir automaticamente, toque no botão abaixo.
+            </p>
+
+            <a class="botao" href="{link_destino}">
+                🛒 Abrir oferta
+            </a>
+        </div>
+    </body>
+    </html>
+    """
+
+    return html
 
 @app.route("/novo", methods=["POST"])
 def novo_link():
@@ -267,6 +355,65 @@ def novo_link():
         "link_rastreado": f"{base_url}/r/{link_id}"
     }
 
+@app.route("/export/cliques.json")
+def exportar_cliques_json():
+    criar_banco()
+    conexao = conectar()
+    cursor = conexao.cursor()
+    cursor.execute("""
+        SELECT id, link_id, produto, categoria, ip, user_agent, horario
+        FROM cliques
+        ORDER BY id ASC
+    """)
+    linhas = cursor.fetchall()
+    conexao.close()
+
+    dados = []
+    for linha in linhas:
+        dados.append({
+            "id": linha[0],
+            "link_id": linha[1],
+            "produto": linha[2],
+            "categoria": linha[3],
+            "ip": linha[4],
+            "user_agent": linha[5],
+            "horario": linha[6]
+        })
+
+    return jsonify(dados)
+
+@app.route("/export/links.json")
+def exportar_links_json():
+    criar_banco()
+    conexao = conectar()
+    cursor = conexao.cursor()
+    cursor.execute("""
+        SELECT id, produto, categoria, preco, score, link_destino, criado_em
+        FROM links
+        ORDER BY id ASC
+    """)
+    linhas = cursor.fetchall()
+    conexao.close()
+
+    dados = []
+    for linha in linhas:
+        dados.append({
+            "id": linha[0],
+            "produto": linha[1],
+            "categoria": linha[2],
+            "preco": linha[3],
+            "score": linha[4],
+            "link_destino": linha[5],
+            "criado_em": linha[6]
+        })
+
+    return jsonify(dados)
+
+@app.route("/health")
+def health():
+    return {"status": "online", "servico": "analytics-shopee"}
+
 if __name__ == "__main__":
     criar_banco()
     app.run(host="0.0.0.0", port=5000)
+
